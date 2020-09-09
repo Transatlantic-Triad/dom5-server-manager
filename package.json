@@ -1,0 +1,51 @@
+{
+  "name": "dom5-server-manager",
+  "version": "1.0.0",
+  "description": "Explorer Backend, API & mongodb database",
+  "main": "build/index.js",
+  "repository": "git@github.com:PiJaAB/explorer-backend.git",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "start": "node ./build/index.js",
+    "build": "run-p -l --silent --aggregate-output build:* && run-s -l --silent build:typescript:*",
+    "build:docs": "rimraf apidoc && apidoc -i src -o apidoc",
+    "build:typescript": "rimraf build",
+    "build:typescript:tsc": "tsc",
+    "build:typescript:alias": "npx tsc-alias",
+    "dev": "nodemon -w src -w types -w .env -- -r tsconfig-paths/register ./src/index.ts",
+    "lint": "run-p -l --silent --aggregate-output --continue-on-error lint:*",
+    "lint:eslint-check": "eslint --print-config 'src/**/*.js' | eslint-config-prettier-check",
+    "lint:prettier": "prettier -c 'src/**/*'",
+    "lint:eslint": "eslint 'src/**/*.{js,ts}' 'types/**/*.{js,ts}'",
+    "lint:typecheck": "tsc --noEmit --pretty"
+  },
+  "nodemonConfig": {
+    "ext": "js,json,ts"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@tsconfig/node12": "^1.0.7",
+    "@typescript-eslint/eslint-plugin": "^4.1.0",
+    "@typescript-eslint/parser": "^4.1.0",
+    "eslint": "^7.8.1",
+    "eslint-config-airbnb-base": "^14.2.0",
+    "eslint-config-prettier": "^6.11.0",
+    "eslint-import-resolver-alias": "^1.1.2",
+    "eslint-plugin-import": "^2.22.0",
+    "eslint-plugin-prettier": "^3.1.4",
+    "jest": "^26.4.2",
+    "nodemon": "^2.0.4",
+    "npm-run-all": "^4.1.5",
+    "npx": "^10.2.2",
+    "prettier": "^2.1.1",
+    "rimraf": "^3.0.2",
+    "ts-node": "^9.0.0",
+    "tsc-alias": "^1.1.1",
+    "tsconfig-paths": "^3.9.0",
+    "typescript": "^4.0.2"
+  },
+  "engines": {
+    "node": ">=12"
+  }
+}
