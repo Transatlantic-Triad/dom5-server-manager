@@ -1,4 +1,4 @@
-import childProcess from 'child_process';
+import ChildProcess from 'child_process';
 import path from 'path';
 import { EventEmitter } from 'events';
 
@@ -37,14 +37,18 @@ const executableName = (() => {
 
 const dom5version = (() => {
   const execPath = path.join(process.cwd(), 'dom5_files', executableName);
-  const { status, error, stdout, stderr } = childProcess.spawnSync(
+  const { status, error, stdout, stderr } = ChildProcess.spawnSync(
     execPath,
-    ['--textonly', '--version'],
+    ['--textonly', '--nosteam', '--version'],
     {
       cwd: path.join(process.cwd(), 'dom5_files'),
       timeout: 10000,
       encoding: 'utf-8',
-      windowsHide: true,
+      windowsHide: process.env.NODE_ENV === 'production',
+      env: {
+        ...process.env,
+        DOM5_CONF: path.join(process.cwd(), 'dom5_home'),
+      },
     },
   );
   if (error) {
@@ -63,9 +67,7 @@ const dom5version = (() => {
     process.exit(status || -1);
   }
   const version = stdout
-    .split('\r\n')
-    .map((s) => s.trim())
-    .join(' ')
+    .replace(/\r\n/g, '\n')
     .split('\n')
     .map((s) => s.trim())
     .join(' ')
@@ -74,8 +76,107 @@ const dom5version = (() => {
 })();
 
 export type Dom5Options = {
-  status?: boolean;
+  port?: number;
+  hostInterval?: number;
+  firstHostTimeout?: number;
+  quickHost?: boolean;
+  maxHoldUps?: number;
+  nationSel?: boolean;
+  clientStart?: boolean;
+  statusHtml?: boolean;
 };
+
+export type Dom5MapOptions = {
+  name: string;
+  riverpart?: number;
+  bridges?: number;
+  extraislands?: number;
+  seapart?: number;
+  mountpart?: number;
+  forestpart?: number;
+  farmpart?: number;
+  wastepart?: number;
+  swamppart?: number;
+  cavepart?: number;
+  cavecluster?: number;
+  kelppart?: number;
+  gorgepart?: number;
+  mapsize?: [number, number];
+  mapprov?: number;
+  mapscol?: [number, number, number, number];
+  mapdscol?: [number, number, number, number];
+  mapccol?: [number, number, number, number];
+  mapbcol?: [number, number, number, number];
+  mapsbcol?: [number, number, number, number];
+  mapbtopcol?: [number, number, number, number];
+  mapnoise?: number;
+  mapdirt?: number;
+  mapdirtcol?: number;
+  mapdirtsize?: number;
+  borderwidth?: number;
+  hills?: number;
+  rugedness?: number;
+  seasize?: number;
+  mapnospr?: boolean;
+  vwrap?: boolean;
+  nohwrap?: boolean;
+  mapbunch?: number;
+};
+
+function spawnDom5(
+  options: readonly Readonly<
+    [
+      string,
+      (
+        | string
+        | boolean
+        | readonly (string | number)[]
+        | number
+        | null
+        | undefined
+      ),
+    ]
+  >[],
+) {
+  const args = ['--textonly', '--nosteam'];
+  for (const [key, val] of options) {
+    if (key.length > 0 && val != null && val !== false) {
+      args.push(`${key.length > 1 ? '--' : '-'}${key}`);
+      if (typeof val === 'string' || typeof val === 'number') {
+        args.push(String(val));
+      } else if (Array.isArray(val)) {
+        args.push(...val.map(String));
+      }
+    }
+  }
+  return ChildProcess.spawn(
+    path.join(process.cwd(), 'dom5_files', executableName),
+    args,
+    {
+      cwd: path.join(process.cwd(), 'dom5_files'),
+      windowsHide: process.env.NODE_ENV === 'production',
+      env: {
+        ...process.env,
+        DOM5_CONF: path.join(process.cwd(), 'dom5_home'),
+      },
+    },
+  );
+}
+
+function ObjectToArray(
+  options: Readonly<
+    Partial<
+      Record<
+        string,
+        string | boolean | readonly (string | number)[] | number | null
+      >
+    >
+  >,
+) {
+  return Object.keys(options).map((key) => {
+    return [key, options[key as keyof typeof options]] as const;
+  });
+}
 
 export class Dom5Server extends EventEmitter {
   options: Dom5Options;
@@ -84,7 +185,63 @@ export class Dom5Server extends EventEmitter {
     super();
     this.options = options;
   }
+
+  static generateMap({ name, ...options }: Dom5MapOptions) {
+    console.log(options);
+    try {
+      const childProcess = spawnDom5(
+        ObjectToArray({
+          makemap: name,
+          ...options,
+        }),
+      );
+      return new Promise((_resolve, _reject) => {
+        let fulfilled = false;
+        const resolve = (val: unknown) => {
+          if (!fulfilled) {
+            fulfilled = true;
+            _resolve(val);
+          }
+        };
+        const reject = (err: Error) => {
+          if (!fulfilled) {
+            fulfilled = true;
+            _reject(err);
+          }
+        };
+        const buffer: string[] = [];
+        function writeToBuffer(data: string) {
+          buffer.push(data);
+        }
+        childProcess.stdout.on('data', writeToBuffer);
+        childProcess.stderr.on('data', writeToBuffer);
+        childProcess.once('error', (err) => {
+          if (childProcess.exitCode != null && !childProcess.killed) {
+            childProcess.kill('SIGKILL');
+          }
+          reject(err);
+        });
+        childProcess.once('exit', (exitCode, signal) => {
+          if (signal !== null) {
+            return reject(new Error(`Process killed with signal: ${signal}`));
+          }
+          if (exitCode !== 0) {
+            return reject(
+              new Error(`Process killed non-zero exit code: ${exitCode}`),
+            );
+          }
+          return resolve(buffer.join(''));
+        });
+      });
+    } catch (err) {
+      return Promise.reject(err);
+    }
+  }
 }
+
+Dom5Server.generateMap({
+  name: 'test',
+}).then(console.log, console.error);
 
 export const VERSION = dom5version;
 export const EXECUTABLE = executableName;
