@@ -76,6 +76,7 @@ const dom5version = (() => {
 })();
 
 export type Dom5Options = {
+  gameName: string;
   port?: number;
   hostInterval?: number;
   firstHostTimeout?: number;
@@ -184,6 +185,13 @@ export class Dom5Server extends EventEmitter {
   constructor(options: Dom5Options) {
     super();
     this.options = options;
+  }
+
+  initNewGame() {
+    console.log(this.options);
+  }
+  startServer() {
+    console.log(this.options);
   }
 
   static generateMap({ name, ...options }: Dom5MapOptions) {
