@@ -265,11 +265,7 @@ export class Dom5Server extends EventEmitter {
   }
 
   initNewGame(options: Dom5NewGameOptions) {
-    return runDom5AsPromise([
-      ['newgame', true],
-      ...ObjectToArray(options),
-      this.options.gameName,
-    ]);
+    return runDom5AsPromise([...ObjectToArray(options), this.options.gameName]);
   }
   startServer() {
     console.log(this.options);
