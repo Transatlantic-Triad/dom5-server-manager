@@ -187,7 +187,6 @@ export class Dom5Server extends EventEmitter {
   }
 
   static generateMap({ name, ...options }: Dom5MapOptions) {
-    console.log(options);
     try {
       const childProcess = spawnDom5(
         ObjectToArray({
@@ -238,10 +237,6 @@ export class Dom5Server extends EventEmitter {
     }
   }
 }
-
-Dom5Server.generateMap({
-  name: 'test',
-}).then(console.log, console.error);
 
 export const VERSION = dom5version;
 export const EXECUTABLE = executableName;

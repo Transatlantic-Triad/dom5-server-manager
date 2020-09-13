@@ -5,7 +5,6 @@
     "preserveConstEnums": true,
     "baseUrl": "src/",
     "allowJs": true,
-    "typeRoots" : ["./node_modules/@types", "./types"],
     "outDir": "build",
     "paths": {
       "@/*": ["./*"],
@@ -13,6 +12,6 @@
     }
   },
 
-  "include": ["types", "src"],
+  "include": ["src"],
   "exclude": ["node_modules", "**/*.spec.ts"]
 }

@@ -23,7 +23,9 @@
   "nodemonConfig": {
     "ext": "js,json,ts"
   },
-  "dependencies": {},
+  "dependencies": {
+    "nat-upnp": "^1.1.1"
+  },
   "devDependencies": {
     "@tsconfig/node12": "^1.0.7",
     "@typescript-eslint/eslint-plugin": "^4.1.0",
