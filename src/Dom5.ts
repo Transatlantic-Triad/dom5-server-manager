@@ -126,27 +126,33 @@ export type Dom5MapOptions = {
 
 function spawnDom5(
   options: readonly Readonly<
-    [
-      string,
-      (
-        | string
-        | boolean
-        | readonly (string | number)[]
-        | number
-        | null
-        | undefined
-      ),
-    ]
+    | [
+        string,
+        (
+          | string
+          | boolean
+          | readonly (string | number)[]
+          | number
+          | null
+          | undefined
+        ),
+      ]
+    | string
   >[],
 ) {
   const args = ['--textonly', '--nosteam'];
-  for (const [key, val] of options) {
-    if (key.length > 0 && val != null && val !== false) {
-      args.push(`${key.length > 1 ? '--' : '-'}${key}`);
-      if (typeof val === 'string' || typeof val === 'number') {
-        args.push(String(val));
-      } else if (Array.isArray(val)) {
-        args.push(...val.map(String));
+  for (const arg of options) {
+    if (typeof arg === 'string') {
+      args.push(arg);
+    } else {
+      const [key, val] = arg;
+      if (key.length > 0 && val != null && val !== false) {
+        args.push(`${key.length > 1 ? '--' : '-'}${key}`);
+        if (typeof val === 'string' || typeof val === 'number') {
+          args.push(String(val));
+        } else if (Array.isArray(val)) {
+          args.push(...val.map(String));
+        }
       }
     }
   }
@@ -179,6 +185,69 @@ function ObjectToArray(
   });
 }
 
+function runDom5AsPromise(
+  options: readonly Readonly<
+    | [
+        string,
+        (
+          | string
+          | boolean
+          | readonly (string | number)[]
+          | number
+          | null
+          | undefined
+        ),
+      ]
+    | string
+  >[],
+) {
+  try {
+    const childProcess = spawnDom5(options);
+    return new Promise<string>((_resolve, _reject) => {
+      let fulfilled = false;
+      const resolve = (val: string | PromiseLike<string>) => {
+        if (!fulfilled) {
+          fulfilled = true;
+          _resolve(val);
+        }
+      };
+      const reject = (err: Error) => {
+        if (!fulfilled) {
+          fulfilled = true;
+          _reject(err);
+        }
+      };
+      const buffer: string[] = [];
+      function writeToBuffer(data: string) {
+        buffer.push(data);
+      }
+      childProcess.stdout.on('data', writeToBuffer);
+      childProcess.stderr.on('data', writeToBuffer);
+      childProcess.once('error', (err) => {
+        if (childProcess.exitCode != null && !childProcess.killed) {
+          childProcess.kill('SIGKILL');
+        }
+        reject(err);
+      });
+      childProcess.once('exit', (exitCode, signal) => {
+        if (signal !== null) {
+          return reject(new Error(`Process killed with signal: ${signal}`));
+        }
+        if (exitCode !== 0) {
+          const err = new Error(
+            `Process killed non-zero exit code: ${exitCode}`,
+          );
+          (err as Error & { output: string }).output = buffer.join('');
+          return reject(err);
+        }
+        return resolve(buffer.join(''));
+      });
+    });
+  } catch (err) {
+    return Promise.reject(err);
+  }
+}
+
 export class Dom5Server extends EventEmitter {
   options: Dom5Options;
 
@@ -188,61 +257,19 @@ export class Dom5Server extends EventEmitter {
   }
 
   initNewGame() {
-    console.log(this.options);
+    return runDom5AsPromise([['newgame', true], this.options.gameName]);
   }
   startServer() {
     console.log(this.options);
   }
 
   static generateMap({ name, ...options }: Dom5MapOptions) {
-    try {
-      const childProcess = spawnDom5(
-        ObjectToArray({
-          makemap: name,
-          ...options,
-        }),
-      );
-      return new Promise((_resolve, _reject) => {
-        let fulfilled = false;
-        const resolve = (val: unknown) => {
-          if (!fulfilled) {
-            fulfilled = true;
-            _resolve(val);
-          }
-        };
-        const reject = (err: Error) => {
-          if (!fulfilled) {
-            fulfilled = true;
-            _reject(err);
-          }
-        };
-        const buffer: string[] = [];
-        function writeToBuffer(data: string) {
-          buffer.push(data);
-        }
-        childProcess.stdout.on('data', writeToBuffer);
-        childProcess.stderr.on('data', writeToBuffer);
-        childProcess.once('error', (err) => {
-          if (childProcess.exitCode != null && !childProcess.killed) {
-            childProcess.kill('SIGKILL');
-          }
-          reject(err);
-        });
-        childProcess.once('exit', (exitCode, signal) => {
-          if (signal !== null) {
-            return reject(new Error(`Process killed with signal: ${signal}`));
-          }
-          if (exitCode !== 0) {
-            return reject(
-              new Error(`Process killed non-zero exit code: ${exitCode}`),
-            );
-          }
-          return resolve(buffer.join(''));
-        });
-      });
-    } catch (err) {
-      return Promise.reject(err);
-    }
+    return runDom5AsPromise(
+      ObjectToArray({
+        makemap: name,
+        ...options,
+      }),
+    );
   }
 }
 
