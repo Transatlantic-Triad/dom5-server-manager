@@ -124,6 +124,10 @@ export type Dom5MapOptions = {
   mapbunch?: number;
 };
 
+export type Dom5NewGameOptions = {
+  mapfile: string;
+};
+
 function spawnDom5(
   options: readonly Readonly<
     | [
@@ -256,8 +260,12 @@ export class Dom5Server extends EventEmitter {
     this.options = options;
   }
 
-  initNewGame() {
-    return runDom5AsPromise([['newgame', true], this.options.gameName]);
+  initNewGame(options: Dom5NewGameOptions) {
+    return runDom5AsPromise([
+      ['newgame', true],
+      ...ObjectToArray(options),
+      this.options.gameName,
+    ]);
   }
   startServer() {
     console.log(this.options);
