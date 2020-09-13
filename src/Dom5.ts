@@ -227,11 +227,15 @@ function runDom5AsPromise(
         if (childProcess.exitCode != null && !childProcess.killed) {
           childProcess.kill('SIGKILL');
         }
+        // eslint-disable-next-line no-param-reassign
+        (err as Error & { output: string }).output = buffer.join('');
         reject(err);
       });
       childProcess.once('exit', (exitCode, signal) => {
         if (signal !== null) {
-          return reject(new Error(`Process killed with signal: ${signal}`));
+          const err = new Error(`Process killed with signal: ${signal}`);
+          (err as Error & { output: string }).output = buffer.join('');
+          return reject(err);
         }
         if (exitCode !== 0) {
           const err = new Error(
