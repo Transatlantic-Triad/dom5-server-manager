@@ -1,7 +1,7 @@
 import ChildProcess from 'child_process';
 import path from 'path';
 
-import { executableName } from './utils';
+import { BaseConfig, getConfig } from './utils';
 
 export type CommandOptions = readonly Readonly<
   | [
@@ -18,7 +18,21 @@ export type CommandOptions = readonly Readonly<
   | string
 >[];
 
-export default function spawnDom5(options: CommandOptions) {
+export default function spawnDom5(
+  options: CommandOptions,
+  config?: Partial<BaseConfig>,
+) {
+  const {
+    EXEC_DIR,
+    EXEC_NAME,
+    CWD: cwd,
+    DOM5_DATA,
+    DOM5_MAPS,
+    DOM5_CONF,
+    DOM5_SAVE,
+    DOM5_LOCALMAPS,
+    DOM5_MODS,
+  } = getConfig(config);
   const args = ['--textonly', '--nosound', '--nosteam', '--nocrashbox'];
   for (const arg of options) {
     if (typeof arg === 'string') {
@@ -35,19 +49,20 @@ export default function spawnDom5(options: CommandOptions) {
       }
     }
   }
-  return ChildProcess.spawn(
-    path.join(process.cwd(), 'dom5_files', executableName),
-    args,
-    {
-      cwd: path.join(process.cwd(), 'dom5_files'),
-      windowsHide: process.env.NODE_ENV === 'production',
-      env: {
-        ...process.env,
-        DOM5_CONF: path.join(process.cwd(), 'dom5_home'),
-      },
-      stdio: ['ignore', 'pipe', 'pipe'],
+  return ChildProcess.spawn(path.join(EXEC_DIR, EXEC_NAME), args, {
+    cwd,
+    windowsHide: process.env.NODE_ENV === 'production',
+    env: {
+      ...process.env,
+      DOM5_MAPS,
+      DOM5_DATA,
+      DOM5_CONF,
+      DOM5_SAVE,
+      DOM5_LOCALMAPS,
+      DOM5_MODS,
     },
-  );
+    stdio: ['ignore', 'pipe', 'pipe'],
+  });
 }
 
 /**

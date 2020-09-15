@@ -1,7 +1,7 @@
 import chalk from 'chalk';
 import { Dom5Options, Dom5MapOptions, transformOptions } from './options';
 import spawnDom5, { runDom5AsPromise } from './spawner';
-import { ObjectToArray } from './utils';
+import { BaseConfig, ObjectToArray } from './utils';
 import Dom5ServerEmitter from './Dom5EventEmitter';
 
 type CP = typeof spawnDom5 extends (...args: any[]) => infer T ? T : never;
@@ -46,16 +46,19 @@ export default class Dom5Server extends Dom5ServerEmitter {
     return this.bufindex;
   }
 
-  startServer() {
+  startServer(config?: BaseConfig) {
     if (this.running) {
       throw new Error('Cannot start server, server already running.');
     }
     this._crashed = false;
-    const childProcess = spawnDom5([
-      ['statusdump', true],
-      ['tcpserver', true],
-      ...transformOptions(this.options),
-    ]);
+    const childProcess = spawnDom5(
+      [
+        ['statusdump', true],
+        ['tcpserver', true],
+        ...transformOptions(this.options),
+      ],
+      config,
+    );
     // this.childProcess = childProcess;
     childProcess.once('exit', (code, signal) => {
       if (code !== 0 && signal !== 'SIGKILL') {
