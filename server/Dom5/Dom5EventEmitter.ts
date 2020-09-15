@@ -1,7 +1,11 @@
 import { EventEmitter } from 'events';
 
 export default class Dom5EventEmitter extends EventEmitter {
-  addListener(event: 'error', listener: (err: Error) => void): this;
+  addListener(event: 'childerror', listener: (err: Error) => void): this;
+  addListener(
+    event: 'line',
+    listener: (line: string, buf: 'stdout' | 'stderr') => void,
+  ): this;
   addListener(
     event: 'exit',
     listener: (code: number | null, signal: NodeJS.Signals | null) => void,
@@ -10,7 +14,8 @@ export default class Dom5EventEmitter extends EventEmitter {
     return super.addListener(event, listener);
   }
 
-  emit(event: 'error', err: Error): boolean;
+  emit(event: 'line', line: string, buf: 'stdout' | 'stderr'): boolean;
+  emit(event: 'childerror', err: Error): boolean;
   emit(
     event: 'exit',
     code: number | null,
@@ -20,7 +25,11 @@ export default class Dom5EventEmitter extends EventEmitter {
     return super.emit(event, ...args);
   }
 
-  on(event: 'error', listener: (err: Error) => void): this;
+  on(
+    event: 'line',
+    listener: (line: string, buf: 'stdout' | 'stderr') => void,
+  ): this;
+  on(event: 'childerror', listener: (err: Error) => void): this;
   on(
     event: 'exit',
     listener: (code: number | null, signal: NodeJS.Signals | null) => void,
@@ -29,7 +38,11 @@ export default class Dom5EventEmitter extends EventEmitter {
     return super.on(event, listener);
   }
 
-  once(event: 'error', listener: (err: Error) => void): this;
+  once(
+    event: 'line',
+    listener: (line: string, buf: 'stdout' | 'stderr') => void,
+  ): this;
+  once(event: 'childerror', listener: (err: Error) => void): this;
   once(
     event: 'exit',
     listener: (code: number | null, signal: NodeJS.Signals | null) => void,
@@ -38,7 +51,11 @@ export default class Dom5EventEmitter extends EventEmitter {
     return super.once(event, listener);
   }
 
-  prependListener(event: 'error', listener: (err: Error) => void): this;
+  prependListener(
+    event: 'line',
+    listener: (line: string, buf: 'stdout' | 'stderr') => void,
+  ): this;
+  prependListener(event: 'childerror', listener: (err: Error) => void): this;
   prependListener(
     event: 'exit',
     listener: (code: number | null, signal: NodeJS.Signals | null) => void,
@@ -47,7 +64,11 @@ export default class Dom5EventEmitter extends EventEmitter {
     return super.prependListener(event, listener);
   }
 
-  prependOnceListener(event: 'error', listener: (err: Error) => void): this;
+  prependOnceListener(
+    event: 'line',
+    listener: (line: string, buf: 'stdout' | 'stderr') => void,
+  ): this;
+  prependOnceListener(event: 'childerror', listener: (err: Error) => void): this;
   prependOnceListener(
     event: 'exit',
     listener: (code: number | null, signal: NodeJS.Signals | null) => void,

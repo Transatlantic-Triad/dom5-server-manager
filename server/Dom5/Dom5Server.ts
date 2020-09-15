@@ -1,4 +1,3 @@
-import chalk from 'chalk';
 import { Dom5Options, Dom5MapOptions, transformOptions } from './options';
 import spawnDom5, { runDom5AsPromise } from './spawner';
 import { BaseConfig, ObjectToArray } from './utils';
@@ -8,10 +7,18 @@ type CP = typeof spawnDom5 extends (...args: any[]) => infer T ? T : never;
 
 export default class Dom5Server extends Dom5ServerEmitter {
   private options: Dom5Options;
-  private childProcess: CP | null = null;
+  public childProcess: CP | null = null;
   private bufindex: number = 0;
-  private outputbuffer: ['stdout' | 'stderr', 'string'][];
+  private outputbuffer: ['stdout' | 'stderr', string][];
+  private outputbuffercache: ['stdout' | 'stderr', string][] | null = null;
   private _crashed = false;
+  private std: {
+    err: string | null;
+    out: string | null;
+  } = {
+    err: null,
+    out: null,
+  };
 
   /**
    * If the server isn't running, is that because it crashed
@@ -23,7 +30,7 @@ export default class Dom5Server extends Dom5ServerEmitter {
   /**
    * Is the server currently running
    */
-  get running() {
+  isRunning(): this is this & { childProcess: CP } {
     return this.childProcess != null;
   }
 
@@ -46,8 +53,48 @@ export default class Dom5Server extends Dom5ServerEmitter {
     return this.bufindex;
   }
 
-  startServer(config?: BaseConfig) {
-    if (this.running) {
+  getOutputBuffer(type?: 'stderr' | 'stdout'): ['stderr' | 'stdout', string][] {
+    if (!this.outputbuffercache) {
+      this.outputbuffercache = [];
+      for (
+        let i = this.getStartIndex();
+        i !== this.bufindex;
+        i = (i + 1) % this.outputbuffer.length
+      ) {
+        if (type == null || type === this.outputbuffer[i][0])
+          this.outputbuffercache.push(this.outputbuffer[i]);
+      }
+    }
+    return type == null
+      ? this.outputbuffercache
+      : this.outputbuffercache.filter(([buf]) => buf === type);
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  private addChunk(buf: 'out' | 'err', chunk: Buffer) {
+    const chunkStr = chunk.toString('utf-8');
+    const [first, ...lines] = chunkStr.replace(/\r\n/g, '\n').split('\n');
+    const last = lines.pop();
+    const { std } = this;
+    const bufname = `std${buf}` as 'stdout' | 'stderr';
+    if (std[buf] == null) std[buf] = first;
+    else std[buf] += first;
+    if (last != null) {
+      this.outputbuffercache = null;
+      this.outputbuffer[this.bufindex] = [bufname, std[buf] as string];
+      this.bufindex = (this.bufindex + 1) % this.outputbuffer.length;
+      this.emit('line', std[buf] as string, bufname);
+      lines.forEach((line) => {
+        this.outputbuffer[this.bufindex] = [bufname, line];
+        this.bufindex = (this.bufindex + 1) % this.outputbuffer.length;
+        this.emit('line', line as string, bufname);
+      });
+      std[buf] = last === '' ? null : last;
+    }
+  }
+
+  start(config?: BaseConfig) {
+    if (this.isRunning()) {
       throw new Error('Cannot start server, server already running.');
     }
     this._crashed = false;
@@ -59,23 +106,77 @@ export default class Dom5Server extends Dom5ServerEmitter {
       ],
       config,
     );
-    // this.childProcess = childProcess;
+    this.childProcess = childProcess;
+    let exited = false;
     childProcess.once('exit', (code, signal) => {
-      if (code !== 0 && signal !== 'SIGKILL') {
-        this._crashed = true;
+      exited = true;
+      try {
+        const { std } = this;
+        if (std.out != null && std.out !== '') {
+          this.outputbuffer[this.bufindex] = ['stdout', std.out];
+          this.bufindex = (this.bufindex + 1) % this.outputbuffer.length;
+          this.emit('line', std.out, 'stdout');
+          std.out = null;
+        }
+        if (std.err != null && std.err !== '') {
+          this.outputbuffer[this.bufindex] = ['stderr', std.err];
+          this.bufindex = (this.bufindex + 1) % this.outputbuffer.length;
+          this.emit('line', std.err, 'stderr');
+          std.err = null;
+        }
+        if (code !== 0 && signal !== 'SIGKILL') {
+          this._crashed = true;
+        }
+      } finally {
+        this.childProcess = null;
+        this.emit('exit', code, signal);
       }
-      this.emit('exit', code, signal);
-      this.childProcess = null;
     });
     childProcess.on('error', (err) => {
-      this.emit('error', err);
+      try {
+        this.emit('childerror', err);
+      } finally {
+        if (
+          !exited &&
+          (childProcess.exitCode != null || childProcess.signalCode != null)
+        ) {
+          childProcess.emit(
+            'exit',
+            childProcess.exitCode != null ? childProcess.exitCode : null,
+            childProcess.signalCode,
+          );
+        }
+      }
     });
     childProcess.stdout.on('data', (chunk: Buffer) =>
-      process.stdout.write(chunk.toString('utf-8')),
+      this.addChunk('out', chunk),
     );
     childProcess.stderr.on('data', (chunk: Buffer) =>
-      process.stderr.write(chalk.red(chunk.toString('utf-8'))),
+      this.addChunk('err', chunk),
     );
+  }
+
+  stop(): Promise<NodeJS.Signals | null> {
+    if (!this.isRunning()) {
+      return Promise.reject(
+        new Error('Cannot stop server, server not running.'),
+      );
+    }
+    const { childProcess } = this;
+    return new Promise((resolve) => {
+      let timeout: NodeJS.Timeout | null = setTimeout(() => {
+        timeout = null;
+        childProcess.kill('SIGKILL');
+      }, 30000);
+      childProcess.kill('SIGTERM');
+      childProcess.prependOnceListener('exit', (exitCode, signalCode) => {
+        if (timeout) {
+          clearTimeout(timeout);
+          timeout = null;
+        }
+        resolve(signalCode);
+      });
+    });
   }
 
   static generateMap({ name, ...options }: Dom5MapOptions) {
