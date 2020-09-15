@@ -49,7 +49,7 @@ export const executableName = (() => {
   }
 })();
 
-export const version = (() => {
+export function getVersion() {
   const execPath = path.join(process.cwd(), 'dom5_files', executableName);
   const { status, error, stdout, stderr } = ChildProcess.spawnSync(
     execPath,
@@ -87,4 +87,4 @@ export const version = (() => {
     .map((s) => s.trim())
     .join(' ')
     .trim()} (${process.platform}-${process.arch})`;
-})();
+}

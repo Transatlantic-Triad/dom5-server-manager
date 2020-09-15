@@ -1,6 +1,6 @@
-import Dom5Server, { VERSION } from './Dom5';
+import Dom5Server, { getVersion } from './Dom5';
 
-console.log('Loaded:', VERSION);
+console.log('Loaded:', getVersion());
 
 (async () => {
   // Async context where you can use await <3
