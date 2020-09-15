@@ -1,17 +1,12 @@
 {
   "extends": "./node_modules/@tsconfig/node12/tsconfig.json",
-
   "compilerOptions": {
     "preserveConstEnums": true,
-    "baseUrl": "src/",
+    "strictNullChecks": true,
+    "baseUrl": "server",
     "allowJs": true,
-    "outDir": "build",
-    "paths": {
-      "@/*": ["./*"],
-      "@": ["."]
-    }
+    "outDir": "build"
   },
-
-  "include": ["src"],
+  "include": ["server"],
   "exclude": ["node_modules", "**/*.spec.ts"]
 }

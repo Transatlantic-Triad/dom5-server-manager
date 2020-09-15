@@ -1,0 +1,83 @@
+{
+  "root": true,
+  "extends": [
+    "plugin:@typescript-eslint/recommended",
+    "airbnb",
+    "prettier/@typescript-eslint",
+    "plugin:prettier/recommended",
+    "prettier/react",
+    "plugin:import/typescript"
+  ],
+  "plugins": [
+    "@typescript-eslint",
+    "react",
+    "jsx-a11y",
+    "import"
+  ],
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "project": "./site/tsconfig.json"
+  },
+  "rules": {
+    "@typescript-eslint/no-unused-vars": ["error", { "argsIgnorePattern": "^_" }],
+    "@typescript-eslint/no-unused-expressions": "error",
+    "@typescript-eslint/no-use-before-define": "error",
+    "no-plusplus": ["error", { "allowForLoopAfterthoughts": true }],
+    "no-unused-vars": "off",
+    "no-unused-expressions": "off",
+    "no-underscore-dangle": ["error", { "allow": ["_id", "__typename"] }],
+    "no-use-before-define": "off",
+    "react/jsx-filename-extension": ["warn", { "extensions": [".tsx", ".jsx"] }],
+    "react/jsx-one-expression-per-line": [ "off" ],
+    "jsx-a11y/label-has-for": [ "error", {
+      "required": {
+        "some": [ "nesting", "id"  ]
+      }
+    }],
+    "jsx-a11y/label-has-associated-control": [ "off" ],
+    "jsx-a11y/media-has-caption": [ "off" ],
+    "import/extensions": ["error", "ignorePackages", {
+      "js": "never",
+      "mjs": "never",
+      "jsx": "never",
+      "ts": "never",
+      "tsx": "never"
+    }],
+    "import/no-extraneous-dependencies": [
+      "error", {
+        "devDependencies": ["**/*.test.js", "storybook/**/*.js"],
+        "packageDir": "./"
+      }
+    ],
+    "react/forbid-prop-types": ["off", { "forbid": [] }],
+    "jsx-a11y/anchor-is-valid": ["off"],
+    "react/jsx-props-no-spreading": ["off"],
+    "react/prefer-stateless-function": ["error", { "ignorePureComponents": true }],
+    "react/default-props-match-prop-types": ["off"]
+  },
+  "env": {
+    "jest": true,
+    "browser": true
+  },
+  "globals": {
+    "document": false,
+    "window": false,
+    "fetch": false,
+    "catch": false,
+    "JSX": true,
+  },
+  "settings": {
+    "import/resolver": {
+      "node": {
+        "extensions": [".js", ".jsx", ".ts", ".tsx", ".json", ".mjs"]
+      }
+    },
+    "import/extensions": [
+      ".js",
+      ".mjs",
+      ".jsx",
+      ".ts",
+      ".tsx"
+    ]
+  }
+}
