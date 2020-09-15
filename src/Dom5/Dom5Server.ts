@@ -47,6 +47,9 @@ export default class Dom5Server extends Dom5ServerEmitter {
   }
 
   startServer() {
+    if (this.running) {
+      throw new Error('Cannot start server, server already running.');
+    }
     this._crashed = false;
     const childProcess = spawnDom5([
       ['statusdump', true],
