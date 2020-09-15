@@ -11,8 +11,12 @@ start((app) => {
   const server = express();
   const nextHandler = app.getRequestHandler();
 
-  server.use((req, res) => {
+  server.use((req, res, next) => {
     (req as typeof req & { dom5Manager: Manager }).dom5Manager = manager;
+    return next();
+  });
+
+  server.use((req, res) => {
     nextHandler(req, res);
   });
 
