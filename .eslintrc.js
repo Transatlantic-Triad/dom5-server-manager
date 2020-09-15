@@ -1,7 +1,12 @@
-const path = require('path');
-
 module.exports = {
-  extends: ['airbnb-base', 'plugin:prettier/recommended', 'prettier'],
+  extends: [
+    'airbnb-base',
+    'plugin:prettier/recommended',
+    'prettier',
+    'plugin:import/errors',
+    'plugin:import/warnings',
+    'plugin:import/typescript',
+  ],
   plugins: ['@typescript-eslint/eslint-plugin'],
   parser: '@typescript-eslint/parser',
   parserOptions: {
@@ -17,6 +22,17 @@ module.exports = {
     '@typescript-eslint/no-unused-expressions': 'error',
     '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
     '@typescript-eslint/no-useless-constructor': 'error',
+    'import/extensions': [
+      'error',
+      'ignorePackages',
+      {
+        js: 'never',
+        mjs: 'never',
+        jsx: 'never',
+        ts: 'never',
+        tsx: 'never',
+      },
+    ],
     'lines-between-class-members': 'off',
     'no-dupe-class-members': 'off',
     'no-plusplus': ['error', { allowForLoopAfterthoughts: true }],
@@ -33,16 +49,7 @@ module.exports = {
     jest: true,
     node: true,
   },
-  globals: {},
-  settings: {
-    'import/resolver': {
-      alias: {
-        map: [['@', path.resolve(__dirname, 'src')]],
-        extensions: ['.js', '.json', '.ts'],
-      },
-      node: {
-        extensions: ['.js', '.json', '.ts'],
-      },
-    },
+  globals: {
+    NodeJS: true,
   },
 };

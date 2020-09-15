@@ -13,7 +13,8 @@
     "build:typescript": "rimraf build",
     "build:typescript:tsc": "tsc",
     "build:typescript:alias": "npx tsc-alias",
-    "dev": "nodemon -w src -w types -w .env -- -r tsconfig-paths/register ./src/index.ts",
+    "dev": "ts-node -r tsconfig-paths/register ./src/index.ts",
+    "watch": "nodemon -w src -w types -w .env -- -r tsconfig-paths/register ./src/index.ts",
     "lint": "run-p -l --silent --aggregate-output --continue-on-error lint:*",
     "lint:eslint-check": "eslint --print-config 'src/**/*.js' | eslint-config-prettier-check",
     "lint:prettier": "prettier -c 'src/**/*'",
@@ -24,16 +25,17 @@
     "ext": "js,json,ts"
   },
   "dependencies": {
+    "chalk": "^4.1.0",
     "nat-upnp": "^1.1.1"
   },
   "devDependencies": {
     "@tsconfig/node12": "^1.0.7",
+    "@types/nat-upnp": "^1.1.0",
     "@typescript-eslint/eslint-plugin": "^4.1.0",
     "@typescript-eslint/parser": "^4.1.0",
     "eslint": "^7.8.1",
     "eslint-config-airbnb-base": "^14.2.0",
     "eslint-config-prettier": "^6.11.0",
-    "eslint-import-resolver-alias": "^1.1.2",
     "eslint-plugin-import": "^2.22.0",
     "eslint-plugin-prettier": "^3.1.4",
     "jest": "^26.4.2",

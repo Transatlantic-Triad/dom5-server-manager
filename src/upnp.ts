@@ -1,6 +1,6 @@
 // Awaiting https://github.com/DefinitelyTyped/DefinitelyTyped/pull/47551
 
-/* import {
+import {
   createClient,
   Client,
   NewPortMappingOpts,
@@ -118,4 +118,4 @@ export default class UpnpClient {
     if (this._closed) throw new Error('Client already closed.');
     return this._client.close();
   }
-} */
+}

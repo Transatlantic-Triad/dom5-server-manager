@@ -1,18 +1,19 @@
-import { Dom5Server, VERSION } from '@/Dom5';
+import Dom5Server, { VERSION } from './Dom5';
 
-console.log('Generating map using:', VERSION);
+console.log('Loaded:', VERSION);
 
 (async () => {
   // Async context where you can use await <3
-  //console.log(
-  //  await Dom5Server.generateMap({
-  //    name: 'test',
-  //  }),
-  //);
+  // await Dom5Server.generateMap({
+  //  name: 'test',
+  // });
   const serv = new Dom5Server({
     gameName: 'love_you_echo',
+    port: 9999,
+    era: 'middle',
+    mapfile: 'test',
   });
-  console.log(await serv.initNewGame({ mapfile: 'test.map' }));
+  serv.startServer();
 })().catch((err) => {
   console.error(err);
   if (err.output) console.error(err.output);
