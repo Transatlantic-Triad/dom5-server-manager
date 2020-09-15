@@ -53,7 +53,9 @@ export default class Dom5Server extends Dom5ServerEmitter {
     return this.bufindex;
   }
 
-  getOutputBuffer(type?: 'stderr' | 'stdout'): ['stderr' | 'stdout', string][] {
+  getOutputBuffer(
+    type?: 'stderr' | 'stdout',
+  ): readonly Readonly<['stderr' | 'stdout', string]>[] {
     if (!this.outputbuffercache) {
       this.outputbuffercache = [];
       for (
@@ -70,7 +72,6 @@ export default class Dom5Server extends Dom5ServerEmitter {
       : this.outputbuffercache.filter(([buf]) => buf === type);
   }
 
-  // eslint-disable-next-line class-methods-use-this
   private addChunk(buf: 'out' | 'err', chunk: Buffer) {
     const chunkStr = chunk.toString('utf-8');
     const [first, ...lines] = chunkStr.replace(/\r\n/g, '\n').split('\n');
@@ -81,11 +82,15 @@ export default class Dom5Server extends Dom5ServerEmitter {
     else std[buf] += first;
     if (last != null) {
       this.outputbuffercache = null;
-      this.outputbuffer[this.bufindex] = [bufname, std[buf] as string];
+      let cur = this.outputbuffer[this.bufindex] ?? new Array(2);
+      cur[0] = bufname;
+      cur[1] = std[buf] as string;
       this.bufindex = (this.bufindex + 1) % this.outputbuffer.length;
       this.emit('line', std[buf] as string, bufname);
       lines.forEach((line) => {
-        this.outputbuffer[this.bufindex] = [bufname, line];
+        cur = this.outputbuffer[this.bufindex] ?? new Array(2);
+        cur[0] = bufname;
+        cur[1] = std[buf] as string;
         this.bufindex = (this.bufindex + 1) % this.outputbuffer.length;
         this.emit('line', line as string, bufname);
       });
