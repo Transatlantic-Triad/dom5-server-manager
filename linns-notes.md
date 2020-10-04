@@ -9,3 +9,7 @@
 
 * Server seems to ignore new game options (like `--era`)
 * `--statusdump` may be useful for reading the current game status from code
+
+## Quirks:
+
+* Game really don't like filenames that are not lowercase alphanumeric. Enforce this for maps and savedgames.
