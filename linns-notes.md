@@ -13,3 +13,4 @@
 ## Quirks:
 
 * Game really don't like filenames that are not lowercase alphanumeric. Enforce this for maps and savedgames.
+* Killing the game with connections open doesn't actually kill the process... Potential workaround: use proxy layer to close all connections before killing server.
