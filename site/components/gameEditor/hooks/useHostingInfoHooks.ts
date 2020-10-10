@@ -51,7 +51,7 @@ export default function useHostingInfoHooks(): {
   const [maxHoldUps, setMaxHoldUps] = useState('');
   const getConfig = useCallback<() => Config>(() => {
     switch (hostTimerMode) {
-      case 'weekly': {
+      case 'weekday': {
         const hour = Number(hostHour);
         let maxholdups: number | undefined;
         if (maxHoldUps !== '') {
