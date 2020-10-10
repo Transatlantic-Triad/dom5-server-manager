@@ -1,22 +1,5 @@
 // We really need base to be run first thing
 /* eslint-disable import/order */
-/*
-import Dom5Server from './Dom5';
-
-const game = new Dom5Server({
-  gameName: 'love_you',
-  era: 'middle',
-  mapfile: 'test',
-  port: 9999,
-});
-
-game.on('line', (line) => console.log(line));
-
-game.start();
-
-setTimeout(() => game.stop().then(console.log), 10000);
-*/
-
 import start from './base';
 import express from 'express';
 import manager, { Manager } from './manager';

@@ -113,7 +113,11 @@ export default class Dom5Server extends Dom5ServerEmitter {
     );
     this.childProcess = childProcess;
     let exited = false;
-    childProcess.once('exit', (code, signal) => {
+    const exitHandler = (
+      code: number | null,
+      signal: NodeJS.Signals | null,
+    ) => {
+      if (exited) return;
       exited = true;
       try {
         const { std } = this;
@@ -136,7 +140,8 @@ export default class Dom5Server extends Dom5ServerEmitter {
         this.childProcess = null;
         this.emit('exit', code, signal);
       }
-    });
+    };
+    childProcess.once('exit', exitHandler);
     childProcess.on('error', (err) => {
       try {
         this.emit('childerror', err);
@@ -145,10 +150,9 @@ export default class Dom5Server extends Dom5ServerEmitter {
           !exited &&
           (childProcess.exitCode != null || childProcess.signalCode != null)
         ) {
-          childProcess.emit(
-            'exit',
+          exitHandler(
             childProcess.exitCode != null ? childProcess.exitCode : null,
-            childProcess.signalCode,
+            childProcess.signalCode as NodeJS.Signals | null,
           );
         }
       }
@@ -179,6 +183,7 @@ export default class Dom5Server extends Dom5ServerEmitter {
           clearTimeout(timeout);
           timeout = null;
         }
+        console.log('wait a second', childProcess.signalCode);
         resolve(signalCode);
       });
     });
