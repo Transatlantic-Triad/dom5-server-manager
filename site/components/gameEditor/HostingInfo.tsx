@@ -1,55 +1,106 @@
-import React, { useState, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { Form, Card, Row, Col, Nav } from 'react-bootstrap';
 import DaySelector from '../DaySelector';
 import HourSelector from '../HourSelector';
+import type { States } from './hooks/useHostingInfoHooks';
 
-function WeekdayInput(): JSX.Element {
+function WeekdayInput({
+  hostDay,
+  setHostDay,
+  hostHour,
+  setHostHour,
+}: States): JSX.Element {
   return (
     <Form.Group>
       <Row>
         <Col>
-          <DaySelector />
+          <DaySelector
+            value={hostDay}
+            onChange={({ target: { value } }) => setHostDay(value)}
+          />
         </Col>
         <Col>
-          <HourSelector />
+          <HourSelector
+            value={hostHour}
+            onChange={({ target: { value } }) => setHostHour(value)}
+          />
         </Col>
       </Row>
     </Form.Group>
   );
 }
 
-function HoursInput(): JSX.Element {
+function HoursInput({
+  hours,
+  setHours,
+  pauseDay,
+  setPauseDay,
+}: States): JSX.Element {
   return (
     <>
       <Form.Group>
-        <Form.Control type="text" placeholder="Enter number of hours" />
+        <Form.Control
+          type="text"
+          placeholder="Enter number of hours"
+          value={hours}
+          onChange={({ target: { value } }) =>
+            setHours(value.replace(/[^0-9]/g, ''))
+          }
+        />
       </Form.Group>
       <Form.Group controlId="pauseDay">
         <Form.Label>Pause Day (optional)</Form.Label>
-        <DaySelector optional />
+        <DaySelector
+          optional
+          value={pauseDay}
+          onChange={({ target: { value } }) => setPauseDay(value)}
+        />
       </Form.Group>
     </>
   );
 }
 
-function MinutesInput(): JSX.Element {
+function MinutesInput({
+  minutes,
+  setMinutes,
+  pauseDay,
+  setPauseDay,
+}: States): JSX.Element {
   return (
     <>
       <Form.Group>
-        <Form.Control type="text" placeholder="Enter number of minutes" />
+        <Form.Control
+          type="text"
+          placeholder="Enter number of minutes"
+          value={minutes}
+          onChange={({ target: { value } }) =>
+            setMinutes(value.replace(/[^0-9]/g, ''))
+          }
+        />
       </Form.Group>
       <Form.Group controlId="pauseDay">
         <Form.Label>Pause Day (optional)</Form.Label>
-        <DaySelector optional />
+        <DaySelector
+          optional
+          value={pauseDay}
+          onChange={({ target: { value } }) => setPauseDay(value)}
+        />
       </Form.Group>
     </>
   );
 }
 
-export default function HostingInfo(): JSX.Element {
-  const [hostTimerMode, setHostTimerMode] = useState('none');
-  const [disableQuickhost, setDisableQuickhost] = useState(false);
-  const [disableClientStart, setDisableClientStart] = useState(true);
+export default function HostingInfo(props: States): JSX.Element {
+  const {
+    hostTimerMode,
+    setHostTimerMode,
+    disableQuickhost,
+    setDisableQuickhost,
+    disableClientStart,
+    setDisableClientStart,
+    maxHoldUps,
+    setMaxHoldUps,
+  } = props;
   const TimerComp = useMemo(() => {
     switch (hostTimerMode) {
       case 'weekday':
@@ -92,20 +143,24 @@ export default function HostingInfo(): JSX.Element {
             id="enable-clientstart"
             label="Allow clients to start the game"
             checked={!disableClientStart}
-            onChange={(ev: React.ChangeEvent<HTMLInputElement>) =>
-              setDisableClientStart(!ev.target.checked)
+            onChange={({
+              target: { checked },
+            }: React.ChangeEvent<HTMLInputElement>) =>
+              setDisableClientStart(!checked)
             }
           />
         </Form.Group>
-        {TimerComp != null && <TimerComp />}
+        {TimerComp != null && <TimerComp {...props} />}
         <Form.Group>
           <Form.Check
             type="checkbox"
             id="enable-quickhost"
             label="Enable quickhost"
             checked={!disableQuickhost}
-            onChange={(ev: React.ChangeEvent<HTMLInputElement>) =>
-              setDisableQuickhost(!ev.target.checked)
+            onChange={({
+              target: { checked },
+            }: React.ChangeEvent<HTMLInputElement>) =>
+              setDisableQuickhost(!checked)
             }
           />
         </Form.Group>
@@ -115,6 +170,10 @@ export default function HostingInfo(): JSX.Element {
               disabled={disableQuickhost}
               type="text"
               placeholder="Enter amount of turns a player can miss in a row"
+              value={maxHoldUps}
+              onChange={({ target: { value } }) =>
+                setMaxHoldUps(value.replace(/[^0-9]/g, ''))
+              }
             />
             <Form.Text>
               If a player misses this many turns, allow quickhosting without

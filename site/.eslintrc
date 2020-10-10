@@ -3,6 +3,7 @@
   "extends": [
     "plugin:@typescript-eslint/recommended",
     "airbnb",
+    "plugin:react-hooks/recommended",
     "prettier/@typescript-eslint",
     "plugin:prettier/recommended",
     "prettier/react",
@@ -19,11 +20,12 @@
     "project": "./site/tsconfig.json"
   },
   "rules": {
-    "@typescript-eslint/no-unused-vars": ["error", {
-      "argsIgnorePattern": "^_"
-    }],
+    "@typescript-eslint/lines-between-class-members": ["error", { "exceptOfterOverload": true }],
+    "@typescript-eslint/no-dupe-class-members": "error",
     "@typescript-eslint/no-unused-expressions": "error",
-    "@typescript-eslint/no-use-before-define": "error",
+    "@typescript-eslint/no-unused-vars": ["error", { "argsIgnorePattern": "^_" }],
+    "@typescript-eslint/no-useless-constructor": "error",
+    "@typescript-eslint/no-redeclare": "error",
     "no-plusplus": ["error", {
       "allowForLoopAfterthoughts": true
     }],
@@ -33,6 +35,7 @@
       "allow": ["_id", "__typename"]
     }],
     "no-use-before-define": "off",
+    "no-redeclare": "off",
     "react/jsx-filename-extension": ["warn", {
       "extensions": [".tsx", ".jsx"]
     }],
@@ -69,7 +72,9 @@
     "react/require-default-props": ["error", {
       "forbidDefaultForRequired": true,
       "ignoreFunctionalComponents": true
-    }]
+    }],
+    "react-hooks/rules-of-hooks": "error",
+    "react-hooks/exhaustive-deps": "warn"
   },
   "env": {
     "jest": true,

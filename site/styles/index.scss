@@ -1,1 +1,9 @@
 @import "~bootstrap/scss/bootstrap";
+@import "~react-bootstrap-switch/dist/css/bootstrap3/react-bootstrap-switch.css";
+@import "nprogress";
+
+.bootstrap-switch .bootstrap-switch-handle-on,
+.bootstrap-switch .bootstrap-switch-handle-off,
+.bootstrap-switch .bootstrap-switch-label {
+  line-height: 24px;
+}

@@ -1,13 +1,57 @@
 import React from 'react';
 import { Form } from 'react-bootstrap';
 
-type Props = {
-  optional?: boolean;
+export type Hour =
+  | '0'
+  | '1'
+  | '2'
+  | '3'
+  | '4'
+  | '5'
+  | '6'
+  | '7'
+  | '8'
+  | '9'
+  | '10'
+  | '11'
+  | '12'
+  | '13'
+  | '14'
+  | '15'
+  | '16'
+  | '17'
+  | '18'
+  | '19'
+  | '20'
+  | '21'
+  | '22'
+  | '23';
+
+type RequiredProps = {
+  optional?: false;
+  value?: Hour;
+  onChange?: (
+    ev: React.ChangeEvent<HTMLSelectElement & { value: Hour }>,
+  ) => void | boolean;
 };
 
-export default function HourSelector({ optional = false }: Props): JSX.Element {
+type OptionalProps = {
+  optional: true;
+  value?: Hour | 'none';
+  onChange?: (
+    ev: React.ChangeEvent<HTMLSelectElement & { value: Hour | 'none' }>,
+  ) => void | boolean;
+};
+
+function HourSelector(props: RequiredProps): JSX.Element;
+function HourSelector(props: OptionalProps): JSX.Element;
+function HourSelector({
+  optional = false,
+  value,
+  onChange,
+}: OptionalProps | RequiredProps): JSX.Element {
   return (
-    <Form.Control as="select">
+    <Form.Control as="select" value={value} onChange={onChange}>
       {optional && <option value="none">None</option>}
       <option value="0">00:00</option>
       <option value="1">01:00</option>
@@ -36,3 +80,5 @@ export default function HourSelector({ optional = false }: Props): JSX.Element {
     </Form.Control>
   );
 }
+
+export default HourSelector;

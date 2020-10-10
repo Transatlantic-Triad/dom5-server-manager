@@ -1,6 +1,6 @@
 // We really need base to be run first thing
 /* eslint-disable import/order */
-import Dom5Server from './Dom5';
+/* import Dom5Server from './Dom5';
 
 const game = new Dom5Server({
   gameName: 'love_you',
@@ -19,11 +19,10 @@ game.on('exit', console.log);
 // game.start();
 setTimeout(() => {
   game.pingStatus();
-}, 1000);
+}, 1000);*/
 
 // setTimeout(() => game.stop().then(console.log), 100);
 
-/*
 import start from './base';
 import express from 'express';
 import manager, { Manager } from './manager';
@@ -47,4 +46,3 @@ start((app) => {
     console.log(`> Ready on http://localhost:${port}`);
   });
 });
-*/
