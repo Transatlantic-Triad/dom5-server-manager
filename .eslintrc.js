@@ -46,7 +46,6 @@ module.exports = {
     'spaced-comment': ['error', 'always', { markers: ['/'] }],
   },
   env: {
-    jest: true,
     node: true,
   },
   globals: {

@@ -1,9 +1,16 @@
+// import ChildProcess from 'child_process';
+import fs from 'fs';
+import path from 'path';
+import { promisify } from 'util';
 import { Dom5Options, Dom5MapOptions, transformOptions } from './options';
 import spawnDom5, { runDom5AsPromise } from './spawner';
-import { BaseConfig, ObjectToArray } from './utils';
+import { getConfig, BaseConfig, ObjectToArray } from './utils';
 import Dom5ServerEmitter from './Dom5EventEmitter';
+import probeServerForInfo from './Dom5Connection';
 
 type CP = typeof spawnDom5 extends (...args: any[]) => infer T ? T : never;
+
+const fsReadFile = promisify(fs.readFile);
 
 export default class Dom5Server extends Dom5ServerEmitter {
   private options: Dom5Options;
@@ -98,12 +105,13 @@ export default class Dom5Server extends Dom5ServerEmitter {
     }
   }
 
-  start(config?: BaseConfig) {
+  async start(config?: BaseConfig) {
     if (this.isRunning()) {
       throw new Error('Cannot start server, server already running.');
     }
     this._crashed = false;
-    const childProcess = spawnDom5(
+
+    const childProcess = /* ChildProcess.spawn('node', ['spam.js']); */ spawnDom5(
       [
         ['statusdump', true],
         ['tcpserver', true],
@@ -113,7 +121,11 @@ export default class Dom5Server extends Dom5ServerEmitter {
     );
     this.childProcess = childProcess;
     let exited = false;
-    childProcess.once('exit', (code, signal) => {
+    const exitHandler = (
+      code: number | null,
+      signal: NodeJS.Signals | null,
+    ) => {
+      if (exited) return;
       exited = true;
       try {
         const { std } = this;
@@ -136,7 +148,8 @@ export default class Dom5Server extends Dom5ServerEmitter {
         this.childProcess = null;
         this.emit('exit', code, signal);
       }
-    });
+    };
+    childProcess.once('exit', exitHandler);
     childProcess.on('error', (err) => {
       try {
         this.emit('childerror', err);
@@ -145,10 +158,9 @@ export default class Dom5Server extends Dom5ServerEmitter {
           !exited &&
           (childProcess.exitCode != null || childProcess.signalCode != null)
         ) {
-          childProcess.emit(
-            'exit',
+          exitHandler(
             childProcess.exitCode != null ? childProcess.exitCode : null,
-            childProcess.signalCode,
+            childProcess.signalCode as NodeJS.Signals | null,
           );
         }
       }
@@ -159,6 +171,68 @@ export default class Dom5Server extends Dom5ServerEmitter {
     childProcess.stderr.on('data', (chunk: Buffer) =>
       this.addChunk('err', chunk),
     );
+  }
+
+  async pingStatus(): Promise<unknown> {
+    return probeServerForInfo(this.options.port);
+  }
+
+  async getStatus(config?: BaseConfig) {
+    const dumpPath = path.join(
+      getConfig(config).DOM5_SAVE,
+      this.options.gameName,
+      'statusdump.txt',
+    );
+
+    const file = (await fsReadFile(dumpPath, { encoding: 'utf-8' }))
+      .trim()
+      .replace(/\r\n/g, '\n');
+    const [header, gameInfo, ...rows] = file.split('\n');
+    // eslint-disable-next-line no-useless-catch
+    try {
+      const [, name] = header.match(/^Status for '(.+)'$/) as RegExpMatchArray;
+      const info = gameInfo
+        .split(',')
+        .map((s) => s.trim().split(/\s+/, 2))
+        .reduce((acc: Record<string, Number>, [key, val]) => {
+          acc[key] = Number.parseInt(val, 10);
+          return acc;
+        }, {} as Record<string, number>);
+      const nations = rows.map((r) => {
+        const [
+          type,
+          num1,
+          num2,
+          maybeplayerstatus,
+          num4,
+          num5,
+          code,
+          title,
+          subtitle,
+        ] = r.split('\t');
+        if (type !== 'Nation') {
+          throw new Error('Invalid row type');
+        }
+        return {
+          num1,
+          num2,
+          maybeplayerstatus, // 0 = open, 1 = player, 2 = ai
+          num4, // ai level
+          num5, // turn stage 0 = not started, 1 = started, not finished, 2 = finished
+          code,
+          title,
+          subtitle,
+        };
+      });
+      return {
+        name,
+        info,
+        nations,
+      };
+    } catch (err) {
+      console.error(err);
+      throw new Error('Malformated statusdump.txt');
+    }
   }
 
   stop(): Promise<NodeJS.Signals | null> {
@@ -179,6 +253,7 @@ export default class Dom5Server extends Dom5ServerEmitter {
           clearTimeout(timeout);
           timeout = null;
         }
+        console.log('wait a second', childProcess.signalCode);
         resolve(signalCode);
       });
     });

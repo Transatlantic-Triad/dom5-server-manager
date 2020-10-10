@@ -68,7 +68,10 @@ export default class Dom5EventEmitter extends EventEmitter {
     event: 'line',
     listener: (line: string, buf: 'stdout' | 'stderr') => void,
   ): this;
-  prependOnceListener(event: 'childerror', listener: (err: Error) => void): this;
+  prependOnceListener(
+    event: 'childerror',
+    listener: (err: Error) => void,
+  ): this;
   prependOnceListener(
     event: 'exit',
     listener: (code: number | null, signal: NodeJS.Signals | null) => void,
