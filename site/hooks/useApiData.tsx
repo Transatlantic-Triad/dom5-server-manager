@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect } from 'react';
 import axios from 'axios';
 
 import type ApiIsConfigured from '../pages/api/isConfigured';
+import type ApiMaps from '../pages/api/maps';
 
 type GetAPIRes<A> = A extends (...args: never[]) => Promise<infer T | void>
   ? T
@@ -9,6 +10,7 @@ type GetAPIRes<A> = A extends (...args: never[]) => Promise<infer T | void>
 
 type Endpoints = {
   isConfigured: GetAPIRes<typeof ApiIsConfigured>;
+  maps: GetAPIRes<typeof ApiMaps>;
 };
 
 export default function useApiData<T extends keyof Endpoints>(

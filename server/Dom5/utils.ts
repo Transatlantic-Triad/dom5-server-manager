@@ -75,7 +75,7 @@ export function configure(opts: Partial<BaseConfig>) {
   BASE_CONFIG.DOM5_DATA =
     opts.DOM5_DATA || path.join(BASE_CONFIG.EXEC_DIR, 'data');
   BASE_CONFIG.DOM5_MAPS =
-    opts.DOM5_MAPS || path.join(BASE_CONFIG.DOM5_DATA, '..', 'data');
+    opts.DOM5_MAPS || path.join(BASE_CONFIG.DOM5_DATA, '..', 'maps');
   BASE_CONFIG.DOM5_CONF =
     opts.DOM5_CONF || path.join(process.cwd(), 'dom5_home');
   BASE_CONFIG.DOM5_SAVE =

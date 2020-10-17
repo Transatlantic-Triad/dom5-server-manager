@@ -4,9 +4,12 @@ import Switch from 'react-bootstrap-switch';
 import HelpCircleIcon from 'mdi-react/HelpCircleIcon';
 import type { States } from './hooks/useBasicInfoHooks';
 import type { Era } from '../../../server/Dom5/options';
+import useApiData from '../../hooks/useApiData';
 
-const UPnPTooltip = (props) => (
-  <Popover id="upnp-popover" {...props}>
+const UPnPTooltip = (
+  props: Omit<React.ComponentProps<typeof Popover>, 'id'>,
+) => (
+  <Popover {...props} id="upnp-popover">
     <Popover.Title as="h3">What is UPnP?</Popover.Title>
     <Popover.Content>
       UPnP is a technique to automate port-forwarding. It requires a compatible
@@ -28,6 +31,7 @@ export default function Index({
   mapFile,
   setMapFile,
 }: States): JSX.Element {
+  const { data, isLoading, error } = useApiData('maps');
   return (
     <Card className="my-2">
       <Card.Header>
@@ -59,7 +63,7 @@ export default function Index({
                 onChange={(ev) =>
                   setPort(ev.target.value.replace(/[^0-9]/g, ''))
                 }
-                onBlur={(ev) =>
+                onBlur={(ev: React.FocusEvent<HTMLInputElement>) =>
                   ev.target.value &&
                   setPort(
                     Math.min(
@@ -90,7 +94,7 @@ export default function Index({
               <div>
                 <Switch
                   value={useUpnp}
-                  onChange={(el, val) => setUseUpnp(val)}
+                  onChange={(el, val) => setUseUpnp(val || false)}
                 />
               </div>
               <Form.Text>auto port-forwarding</Form.Text>
@@ -115,10 +119,14 @@ export default function Index({
             as="select"
             value={mapFile}
             onChange={(ev) => setMapFile(ev.target.value)}
+            disabled={data == null || isLoading || error != null}
           >
-            <option value="test1map">test1map</option>
-            <option value="test2map">test2map</option>
-            <option value="test3map">test3map</option>
+            {isLoading && <option>Loading...</option>}
+            {!isLoading && error != null && <option>ERROR!</option>}
+            {data != null &&
+              error == null &&
+              !isLoading &&
+              data.map((map) => <option value={map}>{map}</option>)}
           </Form.Control>
         </Form.Group>
       </Card.Body>
