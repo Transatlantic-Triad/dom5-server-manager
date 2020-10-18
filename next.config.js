@@ -30,6 +30,7 @@ const nextEnv = require('next-env');
 const withNextEnv = nextEnv();
 
 module.exports = withNextEnv({
+  distDir: '../.next',
   sassOptions: {
     includePaths: [path.join(__dirname, 'site', 'styles')],
   },

@@ -83,7 +83,16 @@ export function configure(opts: Partial<BaseConfig>) {
   BASE_CONFIG.DOM5_LOCALMAPS =
     opts.DOM5_LOCALMAPS || path.join(BASE_CONFIG.DOM5_CONF, 'maps');
 }
-configure({}); // Init the config
+configure({
+  EXEC_NAME: process.env.DOM5_EXEC_NAME,
+  EXEC_DIR: process.env.DOM5_EXEC_DIR,
+  CWD: process.env.DOM5_CWD,
+  DOM5_DATA: process.env.DOM5_DATA,
+  DOM5_MAPS: process.env.DOM5_MAPS,
+  DOM5_CONF: process.env.DOM5_CONF,
+  DOM5_SAVE: process.env.DOM5_SAVE,
+  DOM5_LOCALMAPS: process.env.DOM5_LOCALMAPS,
+}); // Init the config
 
 export function getConfig(
   overrides?: Partial<BaseConfig>,

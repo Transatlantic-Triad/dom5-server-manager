@@ -120,7 +120,9 @@ export default function HostingInfo(props: States): JSX.Element {
         <Nav
           variant="tabs"
           activeKey={hostTimerMode}
-          onSelect={setHostTimerMode}
+          onSelect={(val) => {
+            setHostTimerMode(val || 'none');
+          }}
         >
           <Nav.Item>
             <Nav.Link eventKey="none">No Timer</Nav.Link>

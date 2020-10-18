@@ -15,3 +15,6 @@
 * Game really don't like filenames that are not lowercase alphanumeric. Enforce this for maps and savedgames.
 * Killing the game with connections open doesn't actually kill the process... Potential workaround: use proxy layer to close all connections before killing server.
 * .map is needed for the mapfile argument.
+
+## Ideas:
+* Reverse proxy can keep track of IP's that have connected to a certain game, and if the IP is known not request a masterpass, if it isn't known do request a masterpass

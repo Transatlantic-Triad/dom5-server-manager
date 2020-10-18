@@ -18,7 +18,10 @@ module.exports = {
       { exceptOfterOverload: true },
     ],
     '@typescript-eslint/no-dupe-class-members': 'error',
-    '@typescript-eslint/no-redeclare': 'error',
+    '@typescript-eslint/no-redeclare': [
+      'error',
+      { ignoreDeclarationMerge: true },
+    ],
     '@typescript-eslint/no-unused-expressions': 'error',
     '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
     '@typescript-eslint/no-useless-constructor': 'error',

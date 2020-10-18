@@ -25,7 +25,7 @@
     "@typescript-eslint/no-unused-expressions": "error",
     "@typescript-eslint/no-unused-vars": ["error", { "argsIgnorePattern": "^_" }],
     "@typescript-eslint/no-useless-constructor": "error",
-    "@typescript-eslint/no-redeclare": "error",
+    "@typescript-eslint/no-redeclare": ["error", { "ignoreDeclarationMerge": true }],
     "import/export": "off",
     "no-plusplus": ["error", {
       "allowForLoopAfterthoughts": true

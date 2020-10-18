@@ -7,3 +7,26 @@
 .bootstrap-switch .bootstrap-switch-label {
   line-height: 24px;
 }
+
+ul.zipfile-status-report {
+  list-style: none;
+  li {
+    position: relative;
+    z-index: 1;
+    &::before {
+      content: 'X';
+      display: inline-block;
+      position: absolute;
+      z-index: -1;
+      color: transparent;
+      left: -1.5em;
+      padding-right: 100%;
+      background-size: contain;
+      background-image: url('/icons/cross.svg');
+      background-repeat: no-repeat;
+    }
+    &.success::before {
+      background-image: url('/icons/check-mark.svg');
+    }
+  }
+}
