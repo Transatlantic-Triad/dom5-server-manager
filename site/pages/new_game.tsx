@@ -1,5 +1,6 @@
 import React, { useCallback } from 'react';
 import { Form, Button } from 'react-bootstrap';
+import usePostCallback from '../hooks/usePostCallback';
 import BasicInfo from '../components/gameEditor/BasicInfo';
 import HostingInfo from '../components/gameEditor/HostingInfo';
 import useHostingInfoHooks from '../components/gameEditor/hooks/useHostingInfoHooks';
@@ -21,11 +22,12 @@ export default function Index(): JSX.Element {
     }),
     [getBasicConfig, getHostingConfig],
   );
+  const { post } = usePostCallback('createGame');
   return (
     <Form>
       <BasicInfo {...basicInfoStates} />
       <HostingInfo {...hostingInfoStates} />
-      <Button onClick={() => console.log(getConfig())}>
+      <Button onClick={() => post(getConfig())}>
         Generate config (check JS console)
       </Button>
     </Form>

@@ -7,6 +7,9 @@
 # dom5 home
 /dom5_home
 
+# dom5 game database
+/dom5data.db
+
 # Logs
 logs
 *.log

@@ -158,6 +158,8 @@ export type Dom5Options = {
   newailvl?: AILevel;
   /** Disable become AI controlled */
   nonewai?: boolean;
+  /** Set whether upnp is used for automatic portfortarding */
+  useUpnp?: boolean;
 };
 
 export type Dom5MapOptions = {
@@ -236,6 +238,11 @@ type NonPartial<T> = {
   [P in keyof T]-?: T[P];
 };
 
+/**
+ * Dom5Options we're using internally but the executable don't understand.
+ */
+const nonExecOptions: readonly (keyof Dom5Options)[] = ['useUpnp'];
+
 export function transformOptions(options: Dom5Options): CommandOptions {
   const parsed: Mutable<CommandOptions> = [];
   let gameName: string | null = null;
@@ -279,6 +286,7 @@ export function transformOptions(options: Dom5Options): CommandOptions {
           gameName = fullOpts[key];
           break;
         default: {
+          if (nonExecOptions.includes(key)) break;
           const val: string | number | boolean | number[] | string[] =
             fullOpts[key];
           if (Array.isArray(val)) {

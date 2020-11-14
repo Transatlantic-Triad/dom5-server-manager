@@ -82,6 +82,8 @@ export function configure(opts: Partial<BaseConfig>) {
     opts.DOM5_SAVE || path.join(BASE_CONFIG.DOM5_CONF, 'savedgames');
   BASE_CONFIG.DOM5_LOCALMAPS =
     opts.DOM5_LOCALMAPS || path.join(BASE_CONFIG.DOM5_CONF, 'maps');
+  BASE_CONFIG.DOM5_MODS =
+    opts.DOM5_MODS || path.join(BASE_CONFIG.DOM5_CONF, 'mods');
 }
 configure({
   EXEC_NAME: process.env.DOM5_EXEC_NAME,
@@ -92,6 +94,7 @@ configure({
   DOM5_CONF: process.env.DOM5_CONF,
   DOM5_SAVE: process.env.DOM5_SAVE,
   DOM5_LOCALMAPS: process.env.DOM5_LOCALMAPS,
+  DOM5_MODS: process.env.DOM5_MODS,
 }); // Init the config
 
 export function getConfig(
